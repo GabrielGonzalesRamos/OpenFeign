@@ -11,12 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/persona")
+@RequestMapping("/v2/persona")
 @RequiredArgsConstructor
 public class PersonaController {
 
     private final PersonaServiceIn personaServiceIn;
-
     @PostMapping
     public ResponseEntity<PersonaDTO> registrar(@RequestBody RequestPersona requestPersona){
         return ResponseEntity
@@ -24,20 +23,19 @@ public class PersonaController {
                 .body(personaServiceIn.crearPersonaIn(requestPersona));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PersonaDTO>obtenerPersona(@PathVariable Long id){
-
+    @GetMapping("/{dni}")
+    public ResponseEntity<PersonaDTO> obtenerPersona(@PathVariable String dni){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(personaServiceIn.obtenerPersonaIn(id).get());
+                .body(personaServiceIn.obtenerPersonaIn(dni).get());
 
     }
     @GetMapping()
-    public ResponseEntity<List<PersonaDTO>>obtenerTodos(){
+    public ResponseEntity<List<PersonaDTO>> obtenerTodosActivos(){
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(personaServiceIn.obtenerTodosIn());
+                .body(personaServiceIn.obtenerTodosActivosIn());
 
     }
     @PutMapping("/{id}")
@@ -46,5 +44,9 @@ public class PersonaController {
                 .status(HttpStatus.OK)
                 .body(personaServiceIn.actualizarIn(id,requestPersona));
 
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<PersonaDTO> eliminar(@PathVariable Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(personaServiceIn.deleteIn(id));
     }
 }

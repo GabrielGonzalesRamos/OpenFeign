@@ -21,13 +21,13 @@ public class PersonsaServiceImpl implements PersonaServiceIn {
     }
 
     @Override
-    public Optional<PersonaDTO> obtenerPersonaIn(Long id) {
-        return personaServiceOut.obtenerPersonaOut(id);
+    public Optional<PersonaDTO> obtenerPersonaIn(String dni) {
+        return personaServiceOut.obtenerPersonaOut(dni);
     }
 
     @Override
-    public List<PersonaDTO> obtenerTodosIn() {
-        return personaServiceOut.obtenerTodosOut();
+    public List<PersonaDTO> obtenerTodosActivosIn() {
+        return personaServiceOut.obtenerTodosActivosOut();
     }
 
     @Override

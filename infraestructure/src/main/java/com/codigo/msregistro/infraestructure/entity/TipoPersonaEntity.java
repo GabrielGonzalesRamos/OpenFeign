@@ -6,23 +6,22 @@ import lombok.Setter;
 
 import java.sql.Timestamp;
 
+@NamedQuery(name = "TipoPersonaEntity.findByCodTipo", query = "select a from TipoPersonaEntity a where a.codTipo=:codTipo")
 @Entity
-@Table(name = "empresa")
+@Table(name = "tipo_persona")
 @Getter
 @Setter
 
-public class EmpresaEntity {
+public class TipoPersonaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_empresa")
-    private Long idEmpresa;
-    @Column(name = "num_docu", nullable = false, length = 15)
-    private String numDocu;
-    @Column(name = "razon_social", nullable = false, length = 150)
-    private String razonSocial;
-    @Column(name = "nom_comercial", nullable = false, length = 150)
-    private String nomComercial;
-    private String estado;
+    @Column(name = "id_tipo_persona")
+    private Long idTipoPersona;
+    @Column(name = "cod_tipo", nullable = false, length = 45)
+    private String codTipo;
+    @Column(name = "desc_tipo", nullable = false, length = 45)
+    private String descTipo;
+    private Integer estado;
     @Column(name = "usua_crea", nullable = false, length = 45)
     private String usuaCrea;
     @Column(name = "date_create")
@@ -35,7 +34,4 @@ public class EmpresaEntity {
     private String usuaDelet;
     @Column(name = "date_delet")
     private Timestamp dateDelet;
-    @ManyToOne(optional = false)
-    @JoinColumn(name= "tipo_documento_id", nullable = false)
-    private TipoDocumentoEntity tipoDocumento;
 }

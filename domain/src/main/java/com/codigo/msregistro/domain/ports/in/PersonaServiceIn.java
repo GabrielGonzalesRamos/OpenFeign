@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public interface PersonaServiceIn {
     PersonaDTO crearPersonaIn(RequestPersona requestPersona);
-    Optional<PersonaDTO> obtenerPersonaIn(Long id);
-    List<PersonaDTO> obtenerTodosIn();
+    Optional<PersonaDTO> obtenerPersonaIn(String dni);
+    List<PersonaDTO> obtenerTodosActivosIn();
     PersonaDTO actualizarIn(Long id, RequestPersona requestPersona);
     PersonaDTO deleteIn(Long id);
 }

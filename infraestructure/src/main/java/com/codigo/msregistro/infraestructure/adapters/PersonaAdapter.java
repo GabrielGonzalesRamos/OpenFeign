@@ -7,10 +7,12 @@ import com.codigo.msregistro.domain.aggregates.response.ResponseReniec;
 import com.codigo.msregistro.domain.ports.out.PersonaServiceOut;
 import com.codigo.msregistro.infraestructure.entity.PersonaEntity;
 import com.codigo.msregistro.infraestructure.entity.TipoDocumentoEntity;
+import com.codigo.msregistro.infraestructure.entity.TipoPersonaEntity;
 import com.codigo.msregistro.infraestructure.mapper.PersonaMapper;
 import com.codigo.msregistro.infraestructure.redis.RedisService;
 import com.codigo.msregistro.infraestructure.repository.PersonaRepository;
 import com.codigo.msregistro.infraestructure.repository.TipoDocumentoRepository;
+import com.codigo.msregistro.infraestructure.repository.TipoPersonaRepository;
 import com.codigo.msregistro.infraestructure.rest.client.ClienteReniec;
 import com.codigo.msregistro.infraestructure.util.Util;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class PersonaAdapter implements PersonaServiceOut {
 
     private final PersonaRepository personaRepository;
     private final TipoDocumentoRepository tipoDocumentoRepository;
+    private final TipoPersonaRepository tipoPersonaRepository;
     private final PersonaMapper personaMapper;
     private final ClienteReniec reniec;
     private final RedisService redisService;
@@ -42,22 +45,22 @@ public class PersonaAdapter implements PersonaServiceOut {
     }
 
     @Override
-    public Optional<PersonaDTO> obtenerPersonaOut(Long id) {
-        String redisInfo = redisService.getFromRedis(Constants.REDIS_KEY_PERSONA + id);
+    public Optional<PersonaDTO> obtenerPersonaOut(String dni) {
+        String redisInfo = redisService.getFromRedis(Constants.REDIS_KEY_PERSONA + dni);
         if(redisInfo != null){
             PersonaDTO personaDTO = Util.convertFromJson(redisInfo, PersonaDTO.class);
             return  Optional.of(personaDTO);
         }
-        PersonaDTO dto  = personaMapper.mapToDto(personaRepository.findById(id).get());
+        PersonaDTO dto  = personaMapper.mapToDto(personaRepository.findByNumDocu(dni));
         String redis = Util.convertToJson(dto);
-        redisService.saveInRedis(Constants.REDIS_KEY_PERSONA + id, redis, 2);
+        redisService.saveInRedis(Constants.REDIS_KEY_PERSONA + dni, redis, 2);
         return Optional.of(dto);
     }
 
     @Override
-    public List<PersonaDTO> obtenerTodosOut() {
+    public List<PersonaDTO> obtenerTodosActivosOut() {
         List<PersonaDTO> personaDTOList = new ArrayList<>();
-        List<PersonaEntity> entities = personaRepository.findAll();
+        List<PersonaEntity> entities = personaRepository.findByEstado(1);
         for(PersonaEntity persona : entities){
             PersonaDTO personaDTO = personaMapper.mapToDto(persona);
             personaDTOList.add(personaDTO);
@@ -71,8 +74,8 @@ public class PersonaAdapter implements PersonaServiceOut {
         if(existe){
             Optional<PersonaEntity> entity = personaRepository.findById(id);
             ResponseReniec responseReniec = getExecutionReniec(requestPersona.getNumDoc());
-            personaRepository.save(getEntityUpdate(responseReniec,entity.get()));
-            return personaMapper.mapToDto(getEntityUpdate(responseReniec,entity.get()));
+            personaRepository.save(getEntityUpdate(responseReniec,entity.get(), requestPersona));
+            return personaMapper.mapToDto(getEntityUpdate(responseReniec,entity.get(), requestPersona));
         }
         return null;
     }
@@ -98,18 +101,23 @@ public class PersonaAdapter implements PersonaServiceOut {
     }
     private PersonaEntity getEntity(ResponseReniec reniec, RequestPersona requestPersona){
         TipoDocumentoEntity tipoDocumento = tipoDocumentoRepository.findByCodTipo(requestPersona.getTipoDoc());
+        TipoPersonaEntity tipoPersona = tipoPersonaRepository.findByCodTipo(requestPersona.getTipoPer());
         PersonaEntity entity = new PersonaEntity();
         entity.setNumDocu(reniec.getNumeroDocumento());
         entity.setNombres(reniec.getNombres());
         entity.setApePat(reniec.getApellidoPaterno());
         entity.setApeMat(reniec.getApellidoMaterno());
+        entity.setTipoPersonaEntity(tipoPersona);
         entity.setEstado(Constants.STATUS_ACTIVE);
         entity.setUsuaCrea(Constants.AUDIT_ADMIN);
         entity.setDateCreate(getTimestamp());
         entity.setTipoDocumento(tipoDocumento);
         return entity;
     }
-    private PersonaEntity getEntityUpdate(ResponseReniec reniec, PersonaEntity personaActualizar){
+    private PersonaEntity getEntityUpdate(ResponseReniec reniec, PersonaEntity personaActualizar, RequestPersona requestPersona){
+        TipoPersonaEntity tipoPersona = tipoPersonaRepository.findByCodTipo(requestPersona.getTipoPer());
+        personaActualizar.setNumDocu(reniec.getNumeroDocumento());
+        personaActualizar.setTipoPersonaEntity(tipoPersona);
         personaActualizar.setNombres(reniec.getNombres());
         personaActualizar.setApePat(reniec.getApellidoPaterno());
         personaActualizar.setApeMat(reniec.getApellidoMaterno());

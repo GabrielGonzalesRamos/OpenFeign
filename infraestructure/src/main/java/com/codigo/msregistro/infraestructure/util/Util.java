@@ -2,7 +2,6 @@ package com.codigo.msregistro.infraestructure.util;
 
 import com.codigo.msregistro.domain.aggregates.dto.PersonaDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
